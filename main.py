@@ -1,56 +1,48 @@
 from external_apis.weather.client import get_hourly_weather_details_now
 from enum import Enum
+from pydantic import BaseModel
 
 
-class Calculations(Enum):
-    def min(self):
-        return self.value[0]
-
-    def max(self):
-        return self.value[1]
-    
-
-class TemperatureLevel(Calculations):
-    VERY_COLD = (-100, 25)
-    COLD = (25, 45)
-    WARM = (45, 60)
+class Range(BaseModel):
+    min: int
+    max: int
 
 
-class WindSpeed(Calculations):
-    HIGH = (10, 100)
-    MEDIUM = (5, 10)
-    LOW = (0, 5)
+class TemperatureLevel(Enum):
+    VERY_COLD = Range(min=-100, max=25)
+    COLD = Range(min=25, max=45)
+    WARM = Range(min=45, max=60)
 
 
-def _determine_temperature_level(temperature):
-    if TemperatureLevel.VERY_COLD.min() <= temperature < TemperatureLevel.VERY_COLD.max():
-        level = TemperatureLevel.VERY_COLD
-    elif TemperatureLevel.COLD.min() <= temperature < TemperatureLevel.COLD.max():
-        level = TemperatureLevel.COLD
-    else:
-        level = TemperatureLevel.WARM
-    return level
+class WindSpeed(Enum):
+    HIGH = Range(min=10, max=100)
+    MEDIUM = Range(min=5, max=10)
+    LOW = Range(min=0, max=5)
 
 
-def _determine_wind_level(wind):
-    if WindSpeed.HIGH.min() <= wind < WindSpeed.HIGH.max():
-        level = WindSpeed.HIGH
-    elif WindSpeed.MEDIUM.min() <= wind < WindSpeed.MEDIUM.max():
-        level = WindSpeed.MEDIUM
-    else:
-        level = WindSpeed.LOW
-    return level
+def _determine_level(weather_metric: Enum, value: int):
+    """Determine level of weather metric like wind speed of high, medium or low.
+    Args:
+        weather_metric: instance of an enum for a weather metric like wind speed or temperature
+        value: integer to quantify weather metric rate like wind speed of 8 mph
+    Returns:
+        weather_metric: enum member
+    """
+    for member in weather_metric:
+        if member.value.min <= value < member.value.max:
+            return member
 
 
 def main():
+    # hardcoded grid values for me
     grid_x = 34
     grid_y = 36
     weather_details_now = get_hourly_weather_details_now(grid_x, grid_y)
 
     is_rainy = True if "rain" in weather_details_now.short_forecast.lower() else False
 
-    today_temperature_level = _determine_temperature_level(weather_details_now.temperature)
-    today_wind_level = _determine_wind_level(weather_details_now.wind_speed_mph_int)
+    today_temperature_level = _determine_level(TemperatureLevel, weather_details_now.temperature)
+    today_wind_level = _determine_level(WindSpeed, weather_details_now.wind_speed_mph_int)
 
     print("Wear:")
     if today_temperature_level in (TemperatureLevel.VERY_COLD, TemperatureLevel.COLD):
@@ -67,5 +59,5 @@ def main():
     if is_rainy:
         print("Vivobarefoot shoes, Umbrella", sep="\n")
 
-main()
 
+main()
