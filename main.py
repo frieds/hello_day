@@ -1,4 +1,5 @@
 from external_apis.weather.client import get_hourly_weather_details_now
+from external_apis.sunrise_sunset.client import get_sunrise_sunset_times
 from enum import Enum
 from pydantic import BaseModel
 
@@ -44,6 +45,10 @@ def main():
     today_temperature_level = _determine_level(TemperatureLevel, weather_details_now.temperature)
     today_wind_level = _determine_level(WindSpeed, weather_details_now.wind_speed_mph_int)
 
+    # hardcoded values for me
+    sunrise_sunset_response = get_sunrise_sunset_times(40.752980, -73.929910)
+    next_sunrise_local_time = sunrise_sunset_response.results.next_sunrise_local_time
+
     print("Wear:")
     if today_temperature_level in (TemperatureLevel.VERY_COLD, TemperatureLevel.COLD):
         print("Winter jacket", "Gloves", "Knit Hat", sep="\n")
@@ -59,5 +64,6 @@ def main():
     if is_rainy:
         print("Vivobarefoot shoes, Umbrella", sep="\n")
 
+    print(f"Next sunrise local time: {next_sunrise_local_time}")
 
 main()
