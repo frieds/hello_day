@@ -100,4 +100,5 @@ def main():
 
     print(f"Next sunrise: {sunrise_statement}")
 
+
 main()
