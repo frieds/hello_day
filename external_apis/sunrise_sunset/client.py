@@ -1,6 +1,7 @@
 from requests import get
 from enum import Enum
 from requests.exceptions import HTTPError
+from datetime import date
 
 from external_apis.sunrise_sunset.schemas import SunriseSunsetResponse
 
@@ -9,11 +10,11 @@ _BASE_URL = "https://api.sunrise-sunset.org"
 
 class EndpointPath(str, Enum):
     # formatted=0 ensures datetimes in ISO 8601 format and day_length in seconds
-    SUNRISE_SUNSET_TIMES = "/json?lat={latitude}&lng={longitude}&formatted=0"
+    SUNRISE_SUNSET_TIMES = "/json?lat={latitude}&lng={longitude}&date={date}&formatted=0"
 
 
-def get_sunrise_sunset_times(latitude: float, longitude: float) -> SunriseSunsetResponse:
-    endpoint = EndpointPath.SUNRISE_SUNSET_TIMES.format(latitude=latitude, longitude=longitude)
+def get_sunrise_sunset_times(latitude: float, longitude: float, date: date) -> SunriseSunsetResponse:
+    endpoint = EndpointPath.SUNRISE_SUNSET_TIMES.format(latitude=latitude, longitude=longitude, date=date)
     url = f"{_BASE_URL}{endpoint}"
 
     try:

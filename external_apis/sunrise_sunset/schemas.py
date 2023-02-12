@@ -19,8 +19,8 @@ class SunriseSunset(BaseModel):
 
     @property
     def next_sunrise_local_time(self) -> datetime:
-        to_local = tz.tzlocal()
-        return self.sunrise.astimezone(to_local)
+        local_tz = tz.tzlocal()
+        return self.sunrise.astimezone(local_tz)
     
 
 class SunriseSunsetResponse(BaseModel):
