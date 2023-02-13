@@ -1,6 +1,21 @@
 from pydantic import BaseModel, Field
-from datetime import datetime
+from datetime import datetime, date
 from dateutil import tz
+
+
+class SunriseSunsetQueryParams(BaseModel):
+    latitude: float
+    longitude: float
+    date: date
+    formatted: int = 0
+
+    def to_query_param_names(self):
+        return {
+            "lat": self.latitude,
+            "lng": self.longitude,
+            "date": self.date,
+            "formatted": self.formatted
+        }
 
 
 class SunriseSunset(BaseModel):
@@ -26,6 +41,3 @@ class SunriseSunset(BaseModel):
 class SunriseSunsetResponse(BaseModel):
     results: SunriseSunset
     status: str
-
-
-
