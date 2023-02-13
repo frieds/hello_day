@@ -1,6 +1,7 @@
 from requests import get
 from requests.exceptions import HTTPError
 from enum import Enum
+from datetime import datetime
 
 from external_apis.weather.schemas import HourlyWeatherResponse, HourlyWeatherPeriodDetails, \
     HourlyWeatherGranularResponse
@@ -13,7 +14,7 @@ class EndpointPath(str, Enum):
     HOURLY_GRANULAR = "/gridpoints/LWX/{grid_x},{grid_y}"
 
 
-def _get_hourly_granular(grid_x: int, grid_y: int):
+def get_hourly_granular(grid_x: int, grid_y: int):
     endpoint = EndpointPath.HOURLY_GRANULAR.format(grid_x=grid_x, grid_y=grid_y)
     url = f"{_BASE_URL}{endpoint}"
 

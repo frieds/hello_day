@@ -44,12 +44,12 @@ class HourlyWeatherResponse(BaseModel):
 
 
 class HourlyWeatherGranularPropertyPeriodValues(BaseModel):
-    validTime: str
+    valid_time: str = Field(alias="validTime")
     value: float
     
     @property
     def start_time(self) -> datetime:
-        return parse(self.validTime.split('/')[0])
+        return parse(self.valid_time.split('/')[0])
     
 
 class HourlyWeatherGranularPropertyDetails(BaseModel):

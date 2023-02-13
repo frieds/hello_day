@@ -1,4 +1,4 @@
-from external_apis.weather.client import get_hourly_weather_details_now
+from external_apis.weather.client import get_hourly_granular
 from external_apis.sunrise_sunset.client import get_sunrise_sunset_times
 from enum import Enum
 from pydantic import BaseModel
@@ -64,16 +64,45 @@ def _date_human_readable_string(a_datetime: datetime):
     return f"{datetime_hour_minute} {date_str}"
 
 
+def _round_datetime_to_hour(a_datetime):
+    if a_datetime.minute >= 45:
+        a_datetime = a_datetime.replace(hour=a_datetime.hour + 1, minute=0, second=0, microsecond=0)
+    else:
+        a_datetime = a_datetime.replace(minute=0, second=0, microsecond=0)
+    return a_datetime
+
+
+def _determine_now_time_period_value(metric_period_values, rounded_utc_hour_now) -> float:
+    for period in reversed(metric_period_values):
+        if period.start_time <= rounded_utc_hour_now:
+            return period.value
+
+
 def main():
     # hardcoded grid values for me
     grid_x = 34
     grid_y = 36
-    weather_details_now = get_hourly_weather_details_now(grid_x, grid_y)
+    weather_granular_details = get_hourly_granular(grid_x, grid_y)
 
-    is_rainy = True if "rain" in weather_details_now.short_forecast.lower() else False
+    utc_now = datetime.now(tz.tzutc())
+    rounded_utc_hour_now = _round_datetime_to_hour(utc_now)
 
-    today_temperature_level = _determine_level(TemperatureLevel, weather_details_now.temperature)
-    today_wind_level = _determine_level(WindSpeed, weather_details_now.wind_speed_mph_int)
+    apparent_temp_period_values = weather_granular_details.properties.apparent_temperature.values
+    apparent_temp_value_now = _determine_now_time_period_value(apparent_temp_period_values, rounded_utc_hour_now)
+
+    wind_speed_period_values = weather_granular_details.properties.wind_speed.values
+    wind_speed_value_now = _determine_now_time_period_value(wind_speed_period_values, rounded_utc_hour_now)
+
+    probability_of_precipitation_period_values = weather_granular_details.properties.probability_of_precipitation.values
+    probability_of_precipitation_value_now = _determine_now_time_period_value(probability_of_precipitation_period_values
+                                                                              , rounded_utc_hour_now)
+
+    quantitative_precipitation_period_values = weather_granular_details.properties.quantitative_precipitation.values
+    quantitative_precipitation_value_now = _determine_now_time_period_value(quantitative_precipitation_period_values,
+                                                                            rounded_utc_hour_now)
+
+    sky_cover_period_values = weather_granular_details.properties.sky_cover.values
+    sky_cover_value_now = _determine_now_time_period_value(sky_cover_period_values, rounded_utc_hour_now)
 
     relevant_sunrise_date = _determine_relevant_sunrise_date()
     # hardcoded values for me
@@ -84,18 +113,18 @@ def main():
     sunrise_statement = _date_human_readable_string(est_sunrise_time)    
 
     print("Wear:")
-    if today_temperature_level in (TemperatureLevel.VERY_COLD, TemperatureLevel.COLD):
+    if apparent_temp_value_now in (TemperatureLevel.VERY_COLD, TemperatureLevel.COLD):
         print("Winter jacket", "Gloves", "Knit Hat", sep="\n")
     else:
         print("REI or OV pants", "T-shirt", sep="\n")
 
-    if today_wind_level in (WindSpeed.HIGH, WindSpeed.MEDIUM) and weather_details_now.is_daytime:
+    if wind_speed_value_now in (WindSpeed.HIGH, WindSpeed.MEDIUM) and sky_cover_value_now < 40:
         print("Sunglasses")
 
-    if today_temperature_level == TemperatureLevel.VERY_COLD and today_wind_level == WindSpeed.HIGH:
+    if apparent_temp_value_now == TemperatureLevel.VERY_COLD and wind_speed_value_now == WindSpeed.HIGH:
         print("Facemask")
 
-    if is_rainy:
+    if probability_of_precipitation_value_now > 10 or quantitative_precipitation_value_now > 0:
         print("Vivobarefoot shoes, Umbrella", sep="\n")
 
     print(f"Next sunrise: {sunrise_statement}")
