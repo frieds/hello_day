@@ -1,24 +1,17 @@
 from requests import get
-from enum import Enum
 from requests.exceptions import HTTPError
 from datetime import date
 
-from external_apis.sunrise_sunset.schemas import SunriseSunsetResponse
+from external_apis.sunrise_sunset.schemas import SunriseSunsetResponse, SunriseSunsetQueryParams
 
-_BASE_URL = "https://api.sunrise-sunset.org"
-
-
-class EndpointPath(str, Enum):
-    # formatted=0 ensures datetimes in ISO 8601 format and day_length in seconds
-    SUNRISE_SUNSET_TIMES = "/json?lat={latitude}&lng={longitude}&date={date}&formatted=0"
+_BASE_URL = "https://api.sunrise-sunset.org/json"
 
 
-def get_sunrise_sunset_times(latitude: float, longitude: float, date: date) -> SunriseSunsetResponse:
-    endpoint = EndpointPath.SUNRISE_SUNSET_TIMES.format(latitude=latitude, longitude=longitude, date=date)
-    url = f"{_BASE_URL}{endpoint}"
-
+def get_sunrise_sunset_times(latitude: float, longitude: float, a_date: date) -> SunriseSunsetResponse:
+    query_params = SunriseSunsetQueryParams(latitude=latitude, longitude=longitude, date=a_date)
+    
     try:
-        response = get(url=url)
+        response = get(url=_BASE_URL, params=query_params.to_query_param_names())
         response.raise_for_status()
     except HTTPError as http_err:
         print(f"HTTP error occurred: {http_err}")
