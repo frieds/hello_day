@@ -85,10 +85,11 @@ def main():
     latitude = 40.752980
     longitude = -73.929910
 
-    weather_granular_details = get_hourly_granular(grid_x, grid_y)
-
     utc_now = datetime.now(tz.tzutc())
     rounded_utc_hour_now = _round_datetime_to_hour(utc_now)
+
+    # Get weather metrics
+    weather_granular_details = get_hourly_granular(grid_x, grid_y)
 
     apparent_temp_period_values = weather_granular_details.properties.apparent_temperature.values
     apparent_temp_value_now = _determine_now_time_period_value(apparent_temp_period_values, rounded_utc_hour_now)
@@ -107,21 +108,23 @@ def main():
     sky_cover_period_values = weather_granular_details.properties.sky_cover.values
     sky_cover_value_now = _determine_now_time_period_value(sky_cover_period_values, rounded_utc_hour_now)
 
+    # Get sunrise data
     relevant_sunrise_date = _determine_relevant_sunrise_date()
     sunrise_sunset_response = get_sunrise_sunset_times(latitude=latitude, longitude=longitude,
                                                        date_value=relevant_sunrise_date)
     local_tz = tz.tzlocal()
-    utc_sunrise_time = sunrise_sunset_response.results.sunrise
-    est_sunrise_time = utc_sunrise_time.astimezone(local_tz)
-    sunrise_statement = _date_human_readable_string(est_sunrise_time)
+    sunrise_time_utc = sunrise_sunset_response.results.sunrise_time_utc
+    sunrise_time_est = sunrise_time_utc.astimezone(local_tz)
+    sunrise_statement = _date_human_readable_string(sunrise_time_est)
 
     date_today = utc_now.date()
     sunrise_sunset_today_response = get_sunrise_sunset_times(latitude=latitude, longitude=longitude, date_value=date_today)
-    utc_sunrise_today_time = sunrise_sunset_today_response.results.sunrise
-    utc_sunset_today_time = sunrise_sunset_today_response.results.sunset
+    sunrise_today_time_utc = sunrise_sunset_today_response.results.sunrise_time_utc
+    sunset_today_time_utc = sunrise_sunset_today_response.results.sunset_time_utc
 
-    is_past_morning = utc_now > utc_sunrise_today_time + timedelta(minutes=30)
-    is_before_evening = utc_now + timedelta(minutes=40) < utc_sunset_today_time
+    # Logic to recommend clothing and accessories
+    is_past_morning = utc_now > sunrise_today_time_utc + timedelta(minutes=30)
+    is_before_evening = utc_now + timedelta(minutes=40) < sunset_today_time_utc
     is_sunny = sky_cover_value_now < 30
     is_windy = wind_speed_value_now in (WindSpeed.HIGH, WindSpeed.MEDIUM)
     
