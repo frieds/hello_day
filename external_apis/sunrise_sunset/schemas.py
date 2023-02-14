@@ -1,26 +1,17 @@
 from pydantic import BaseModel, Field
 from datetime import datetime, date
-from dateutil import tz
 from typing import Union
 
 
 class SunriseSunsetQueryParams(BaseModel):
-    latitude: float
-    longitude: float
+    latitude: float = Field(alias="lat")
+    longitude: float = Field(alias="lng")
     # API default is date will be today
-    date_value: Union[date, None] = None
+    date_value: Union[date, None] = Field(default=None, alias="date")
     formatted: int = 0
 
-    def to_query_param_names(self):
-        # keys are query param names from API endpoint
-        query_params = {
-            "lat": self.latitude,
-            "lng": self.longitude,
-            "formatted": self.formatted
-        }
-        if self.date_value is not None:
-            query_params["date"] = self.date_value
-        return query_params
+    class Config:
+        allow_population_by_field_name = True
 
 
 class SunriseSunset(BaseModel):
@@ -37,11 +28,6 @@ class SunriseSunset(BaseModel):
     astronomical_twilight_begin: datetime
     astronomical_twilight_end: datetime
 
-    @property
-    def next_sunrise_local_time(self) -> datetime:
-        local_tz = tz.tzlocal()
-        return self.sunrise.astimezone(local_tz)
-    
 
 class SunriseSunsetResponse(BaseModel):
     results: SunriseSunset
