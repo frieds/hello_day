@@ -79,9 +79,12 @@ def _determine_now_time_period_value(metric_period_values, rounded_utc_hour_now)
 
 
 def main():
-    # hardcoded grid values for me
+    # hardcoded values for me
     grid_x = 34
     grid_y = 36
+    latitude = 40.752980
+    longitude = -73.929910
+
     weather_granular_details = get_hourly_granular(grid_x, grid_y)
 
     utc_now = datetime.now(tz.tzutc())
@@ -105,20 +108,29 @@ def main():
     sky_cover_value_now = _determine_now_time_period_value(sky_cover_period_values, rounded_utc_hour_now)
 
     relevant_sunrise_date = _determine_relevant_sunrise_date()
-    # hardcoded values for me
-    sunrise_sunset_response = get_sunrise_sunset_times(40.752980, -73.929910, relevant_sunrise_date)
+    sunrise_sunset_response = get_sunrise_sunset_times(latitude=latitude, longitude=longitude,
+                                                       date_value=relevant_sunrise_date)
     local_tz = tz.tzlocal()
     utc_sunrise_time = sunrise_sunset_response.results.sunrise
     est_sunrise_time = utc_sunrise_time.astimezone(local_tz)
-    sunrise_statement = _date_human_readable_string(est_sunrise_time)    
+    sunrise_statement = _date_human_readable_string(est_sunrise_time)
+
+    date_today = utc_now.date()
+    sunrise_sunset_today_response = get_sunrise_sunset_times(latitude=latitude, longitude=longitude, date_value=date_today)
+    utc_sunrise_today_time = sunrise_sunset_today_response.results.sunrise
+
+    is_past_morning = utc_now > utc_sunrise_today_time + timedelta(minutes=30)
+    is_before_evening = utc_now + timedelta(minutes=40) < utc_sunrise_today_time
+    is_sunny = sky_cover_value_now < 30
+    is_windy = wind_speed_value_now in (WindSpeed.HIGH, WindSpeed.MEDIUM)
 
     print("Wear:")
     if apparent_temp_value_now in (TemperatureLevel.VERY_COLD, TemperatureLevel.COLD):
         print("Winter jacket", "Gloves", "Knit Hat", sep="\n")
     else:
         print("REI or OV pants", "T-shirt", sep="\n")
-
-    if wind_speed_value_now in (WindSpeed.HIGH, WindSpeed.MEDIUM) and sky_cover_value_now < 40:
+        
+    if (is_past_morning and is_before_evening and is_sunny) or (is_windy and is_sunny):
         print("Sunglasses")
 
     if apparent_temp_value_now == TemperatureLevel.VERY_COLD and wind_speed_value_now == WindSpeed.HIGH:
