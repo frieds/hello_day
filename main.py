@@ -118,12 +118,13 @@ def main():
     date_today = utc_now.date()
     sunrise_sunset_today_response = get_sunrise_sunset_times(latitude=latitude, longitude=longitude, date_value=date_today)
     utc_sunrise_today_time = sunrise_sunset_today_response.results.sunrise
+    utc_sunset_today_time = sunrise_sunset_today_response.results.sunset
 
     is_past_morning = utc_now > utc_sunrise_today_time + timedelta(minutes=30)
-    is_before_evening = utc_now + timedelta(minutes=40) < utc_sunrise_today_time
+    is_before_evening = utc_now + timedelta(minutes=40) < utc_sunset_today_time
     is_sunny = sky_cover_value_now < 30
     is_windy = wind_speed_value_now in (WindSpeed.HIGH, WindSpeed.MEDIUM)
-
+    
     print("Wear:")
     if apparent_temp_value_now in (TemperatureLevel.VERY_COLD, TemperatureLevel.COLD):
         print("Winter jacket", "Gloves", "Knit Hat", sep="\n")
