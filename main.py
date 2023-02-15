@@ -1,9 +1,11 @@
-from external_apis.weather.client import get_hourly_weather
-from external_apis.sunrise_sunset.client import get_sunrise_sunset_times
-from enum import Enum
-from pydantic import BaseModel
 from datetime import datetime, timedelta
+from enum import Enum
+
 from dateutil import tz
+from pydantic import BaseModel
+
+from external_apis.sunrise_sunset.client import get_sunrise_sunset_times
+from external_apis.weather.client import get_hourly_weather
 
 
 class Range(BaseModel):
@@ -87,8 +89,8 @@ def main():
     wind_speed_value_now = _determine_now_time_period_value(wind_speed_period_values, utc_now_rounded_hour)
 
     probability_of_precipitation_period_values = weather_details.properties.probability_of_precipitation.values
-    probability_of_precipitation_value_now = _determine_now_time_period_value(probability_of_precipitation_period_values
-                                                                              , utc_now_rounded_hour)
+    probability_of_precipitation_value_now = _determine_now_time_period_value(
+        probability_of_precipitation_period_values, utc_now_rounded_hour)
 
     quantitative_precipitation_period_values = weather_details.properties.quantitative_precipitation.values
     quantitative_precipitation_value_now = _determine_now_time_period_value(quantitative_precipitation_period_values,
@@ -108,13 +110,13 @@ def main():
     is_before_evening = utc_now + timedelta(minutes=40) < sunrise_time_utc
     is_sunny = sky_cover_value_now < 30
     is_windy = wind_speed_value_now in (WindSpeed.HIGH, WindSpeed.MEDIUM)
-    
+
     print("Wear:")
     if apparent_temp_value_now in (TemperatureLevel.VERY_COLD, TemperatureLevel.COLD):
         print("Winter jacket", "Gloves", "Knit Hat", sep="\n")
     else:
         print("REI or OV pants", "T-shirt", sep="\n")
-        
+
     if (is_past_morning and is_before_evening and is_sunny) or (is_windy and is_sunny):
         print("Sunglasses")
 

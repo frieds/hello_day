@@ -1,7 +1,8 @@
-from pydantic import BaseModel, Field, HttpUrl
-from typing import List
 from datetime import datetime
+from typing import List
+
 from dateutil.parser import parse
+from pydantic import BaseModel, Field, HttpUrl
 
 
 class LocationMetadataProperties(BaseModel):
@@ -15,11 +16,11 @@ class LocationMetadataResponse(BaseModel):
 class HourlyWeatherPropertyPeriodValues(BaseModel):
     valid_time: str = Field(alias="validTime")
     value: float
-    
+
     @property
     def start_time(self) -> datetime:
         return parse(self.valid_time.split('/')[0])
-    
+
 
 class HourlyWeatherPropertyDetails(BaseModel):
     unit_of_measurement: str = Field(alias="uom")
@@ -32,13 +33,14 @@ class HourlyWeatherPropertyDetails(BaseModel):
     @property
     def unit_of_measurement_value_full_name(self):
         # only mapped measurements for metrics used
-        mapping = {"degC": "degrees_celsius",
-                   "percent": "percent",
-                   "mm": "millimeters",
-                   "km_h-1": "kilometre_per_hour"
-                   }
+        mapping = {
+            "degC": "degrees_celsius",
+            "percent": "percent",
+            "mm": "millimeters",
+            "km_h-1": "kilometre_per_hour"
+        }
         return mapping[self.unit_of_measurement_value]
-    
+
 
 class HourlyWeatherProperties(BaseModel):
     sky_cover: HourlyWeatherPropertyDetails = Field(alias="skyCover")
@@ -46,7 +48,7 @@ class HourlyWeatherProperties(BaseModel):
     probability_of_precipitation: HourlyWeatherPropertyDetails = Field(alias="probabilityOfPrecipitation")
     quantitative_precipitation: HourlyWeatherPropertyDetails = Field(alias="quantitativePrecipitation")
     wind_speed: HourlyWeatherPropertyDetails = Field(alias="windSpeed")
-        
+
 
 class HourlyWeatherResponse(BaseModel):
     properties: HourlyWeatherProperties
