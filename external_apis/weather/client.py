@@ -1,6 +1,8 @@
+from enum import Enum
+
 from requests import get
 from requests.exceptions import HTTPError
-from enum import Enum
+
 from external_apis.weather.schemas import HourlyWeatherResponse, LocationMetadataResponse
 
 _BASE_URL = "https://api.weather.gov"
@@ -38,4 +40,3 @@ def get_hourly_weather(latitude: float, longitude: float):
     location_metadata_response = _get_location_metadata(latitude=latitude, longitude=longitude)
     forecast_data_grid_url = str(location_metadata_response.properties.forecast_grid_data_url)
     return _get_weather_forecast_grid_data(forecast_grid_data_url=forecast_data_grid_url)
-    

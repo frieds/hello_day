@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
-from datetime import datetime, date
+from datetime import date, datetime
 from typing import Union
+
+from pydantic import BaseModel, Field
 
 
 class SunriseSunsetQueryParams(BaseModel):
