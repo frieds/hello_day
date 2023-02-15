@@ -1,7 +1,15 @@
-from pydantic import BaseModel, Field, Extra
+from pydantic import BaseModel, Field, Extra, HttpUrl
 from typing import Any, List
 from datetime import datetime
 from dateutil.parser import parse
+
+
+class LocationMetadataProperties(BaseModel):
+    forecast_grid_data_url: HttpUrl = Field(alias="forecastGridData")
+
+
+class LocationMetadataResponse(BaseModel):
+    properties: LocationMetadataProperties
 
 
 class HourlyWeatherPeriodDetails(BaseModel):
