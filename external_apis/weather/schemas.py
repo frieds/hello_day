@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, Extra, HttpUrl
+from pydantic import BaseModel, Field, HttpUrl
 from typing import List
 from datetime import datetime
 from dateutil.parser import parse
@@ -12,7 +12,7 @@ class LocationMetadataResponse(BaseModel):
     properties: LocationMetadataProperties
 
 
-class HourlyWeatherGranularPropertyPeriodValues(BaseModel):
+class HourlyWeatherPropertyPeriodValues(BaseModel):
     valid_time: str = Field(alias="validTime")
     value: float
     
@@ -21,9 +21,9 @@ class HourlyWeatherGranularPropertyPeriodValues(BaseModel):
         return parse(self.valid_time.split('/')[0])
     
 
-class HourlyWeatherGranularPropertyDetails(BaseModel):
+class HourlyWeatherPropertyDetails(BaseModel):
     unit_of_measurement: str = Field(alias="uom")
-    values: List[HourlyWeatherGranularPropertyPeriodValues]
+    values: List[HourlyWeatherPropertyPeriodValues]
 
     @property
     def unit_of_measurement_value(self) -> str:
@@ -40,18 +40,13 @@ class HourlyWeatherGranularPropertyDetails(BaseModel):
         return mapping[self.unit_of_measurement_value]
     
 
-class HourlyWeatherGranularProperties(BaseModel, extra=Extra.allow):
-    # arg of extra set to allow ignores tens of other fields
-    sky_cover: HourlyWeatherGranularPropertyDetails = Field(alias="skyCover")
-    apparent_temperature: HourlyWeatherGranularPropertyDetails = Field(alias="apparentTemperature")
-    probability_of_precipitation: HourlyWeatherGranularPropertyDetails = Field(alias="probabilityOfPrecipitation")
-    quantitative_precipitation: HourlyWeatherGranularPropertyDetails = Field(alias="quantitativePrecipitation")
-    wind_speed: HourlyWeatherGranularPropertyDetails = Field(alias="windSpeed")
+class HourlyWeatherProperties(BaseModel):
+    sky_cover: HourlyWeatherPropertyDetails = Field(alias="skyCover")
+    apparent_temperature: HourlyWeatherPropertyDetails = Field(alias="apparentTemperature")
+    probability_of_precipitation: HourlyWeatherPropertyDetails = Field(alias="probabilityOfPrecipitation")
+    quantitative_precipitation: HourlyWeatherPropertyDetails = Field(alias="quantitativePrecipitation")
+    wind_speed: HourlyWeatherPropertyDetails = Field(alias="windSpeed")
         
 
-class HourlyWeatherGranularResponse(BaseModel):
-    context: list = Field(alias="@context")
-    type: str
-    geometry: dict
-    id: str
-    properties: HourlyWeatherGranularProperties
+class HourlyWeatherResponse(BaseModel):
+    properties: HourlyWeatherProperties
