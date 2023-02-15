@@ -2,7 +2,7 @@ from external_apis.weather.client import get_hourly_granular
 from external_apis.sunrise_sunset.client import get_sunrise_sunset_times
 from enum import Enum
 from pydantic import BaseModel
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 from dateutil import tz
 
 
