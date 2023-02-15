@@ -1,4 +1,4 @@
-from external_apis.weather.client import get_hourly_granular
+from external_apis.weather.client import get_hourly_weather
 from external_apis.sunrise_sunset.client import get_sunrise_sunset_times
 from enum import Enum
 from pydantic import BaseModel
@@ -12,12 +12,14 @@ class Range(BaseModel):
 
 
 class TemperatureLevel(Enum):
+    # min max values in Fahrenheit
     VERY_COLD = Range(min=-100, max=25)
     COLD = Range(min=25, max=45)
     WARM = Range(min=45, max=60)
 
 
 class WindSpeed(Enum):
+    # min max values in miles per hour (mph)
     HIGH = Range(min=10, max=100)
     MEDIUM = Range(min=5, max=10)
     LOW = Range(min=0, max=5)
@@ -69,8 +71,6 @@ def _determine_now_time_period_value(metric_period_values, utc_now_rounded_hour)
 
 def main():
     # hardcoded values for me
-    grid_x = 34
-    grid_y = 36
     latitude = 40.752980
     longitude = -73.929910
 
@@ -78,23 +78,23 @@ def main():
     utc_now_rounded_hour = _round_datetime_to_hour(utc_now)
 
     # Get weather metrics
-    weather_granular_details = get_hourly_granular(grid_x, grid_y)
+    weather_details = get_hourly_weather(latitude=latitude, longitude=longitude)
 
-    apparent_temp_period_values = weather_granular_details.properties.apparent_temperature.values
+    apparent_temp_period_values = weather_details.properties.apparent_temperature.values
     apparent_temp_value_now = _determine_now_time_period_value(apparent_temp_period_values, utc_now_rounded_hour)
 
-    wind_speed_period_values = weather_granular_details.properties.wind_speed.values
+    wind_speed_period_values = weather_details.properties.wind_speed.values
     wind_speed_value_now = _determine_now_time_period_value(wind_speed_period_values, utc_now_rounded_hour)
 
-    probability_of_precipitation_period_values = weather_granular_details.properties.probability_of_precipitation.values
+    probability_of_precipitation_period_values = weather_details.properties.probability_of_precipitation.values
     probability_of_precipitation_value_now = _determine_now_time_period_value(probability_of_precipitation_period_values
                                                                               , utc_now_rounded_hour)
 
-    quantitative_precipitation_period_values = weather_granular_details.properties.quantitative_precipitation.values
+    quantitative_precipitation_period_values = weather_details.properties.quantitative_precipitation.values
     quantitative_precipitation_value_now = _determine_now_time_period_value(quantitative_precipitation_period_values,
                                                                             utc_now_rounded_hour)
 
-    sky_cover_period_values = weather_granular_details.properties.sky_cover.values
+    sky_cover_period_values = weather_details.properties.sky_cover.values
     sky_cover_value_now = _determine_now_time_period_value(sky_cover_period_values, utc_now_rounded_hour)
 
     # Get sunrise data
