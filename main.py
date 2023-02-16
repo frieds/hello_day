@@ -40,23 +40,6 @@ def _determine_level(weather_metric: Enum, value: int):
             return member
 
 
-def _time_human_readable_string(datetime_value_utc: datetime):
-    # convert to local time
-    datetime_value_local = datetime_value_utc.astimezone(tz.tzlocal())
-    # converts to hour:minute am/pm
-    datetime_hour_minute = datetime_value_local.strftime("%-H:%M%p").lower()
-
-    datetime_now_utc = datetime.now(tz.tzutc())
-
-    if datetime_value_utc > datetime_now_utc:
-        output = f"is today at {datetime_hour_minute}"
-    elif datetime_value_utc > datetime_now_utc + timedelta(minutes=30):
-        output = f"was earlier at {datetime_hour_minute}"
-    else:
-        output = f"was way earlier at {datetime_hour_minute}"
-    return output
-
-
 def _round_datetime_to_hour(a_datetime):
     if a_datetime.minute >= 45:
         a_datetime = a_datetime.replace(hour=a_datetime.hour + 1, minute=0, second=0, microsecond=0)
@@ -101,9 +84,11 @@ def main():
 
     # Get sunrise data
     sunrise_sunset_today_response = get_sunrise_sunset_times(latitude=latitude, longitude=longitude)
+    sunset_sunrise_data = sunrise_sunset_today_response.results
+    sunrise_time_utc = sunset_sunrise_data.sunrise_time_utc
 
-    sunrise_time_utc = sunrise_sunset_today_response.results.sunrise_time_utc
-    sunrise_time_human_readable_statement = _time_human_readable_string(sunrise_time_utc)
+    sunrise_time_human_readable = sunset_sunrise_data.sunrise_time_human_readable
+    sunset_time_human_readable = sunset_sunrise_data.sunset_time_human_readable
 
     # Logic to recommend clothing and accessories
     is_past_morning = utc_now > sunrise_time_utc + timedelta(minutes=30)
@@ -126,7 +111,8 @@ def main():
     if probability_of_precipitation_value_now > 10 or quantitative_precipitation_value_now > 0:
         print("Vivobarefoot shoes, Umbrella", sep="\n")
 
-    print(f"Sunrise: {sunrise_time_human_readable_statement}")
+    print(f"Sunrise {sunrise_time_human_readable}")
+    print(f"Sunset {sunset_time_human_readable}")
 
 
 main()
