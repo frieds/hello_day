@@ -20,15 +20,8 @@ class SunriseSunset(BaseModel):
     # all times UTC
     sunrise_time_utc: datetime = Field(alias="sunrise")
     sunset_time_utc: datetime = Field(alias="sunset")
-    solar_noon: datetime
     # in seconds
     day_length: int
-    civil_twilight_begin: datetime
-    civil_twilight_end: datetime
-    nautical_twilight_begin: datetime
-    nautical_twilight_end: datetime
-    astronomical_twilight_begin: datetime
-    astronomical_twilight_end: datetime
 
     @property
     def sunrise_time_human_readable(self):
