@@ -2,7 +2,10 @@ from datetime import datetime
 from typing import List
 
 from dateutil.parser import parse
+from dateutil import tz
 from pydantic import BaseModel, Field, HttpUrl
+
+from external_apis.weather.date_calculations import round_datetime_to_next_hour
 
 
 class LocationMetadataProperties(BaseModel):
@@ -25,6 +28,19 @@ class HourlyWeatherPropertyPeriodValues(BaseModel):
 class HourlyWeatherPropertyDetails(BaseModel):
     unit_of_measurement: str = Field(alias="uom")
     values: List[HourlyWeatherPropertyPeriodValues]
+
+    def now_time_period_value(self) -> float:
+        """
+        Values have time period start times. Periods can be multiple hours.
+        Logic finds the value for the time period that now is in.
+        Returns:
+            period value
+        """
+        utc_now_rounded_hour = round_datetime_to_next_hour(datetime.now(tz.tzutc()))
+
+        for period in reversed(self.values):
+            if period.start_time <= utc_now_rounded_hour:
+                return period.value
 
     @property
     def unit_of_measurement_value(self) -> str:

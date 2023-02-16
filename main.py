@@ -40,49 +40,23 @@ def _determine_level(weather_metric: Enum, value: int):
             return member
 
 
-def _round_datetime_to_hour(a_datetime):
-    if a_datetime.minute >= 45:
-        a_datetime = a_datetime.replace(hour=a_datetime.hour + 1, minute=0, second=0, microsecond=0)
-    else:
-        a_datetime = a_datetime.replace(minute=0, second=0, microsecond=0)
-    return a_datetime
-
-
-def _determine_now_time_period_value(metric_period_values, utc_now_rounded_hour) -> float:
-    for period in reversed(metric_period_values):
-        if period.start_time <= utc_now_rounded_hour:
-            return period.value
-
-
 def main():
     # hardcoded values for me
     latitude = 40.752980
     longitude = -73.929910
 
     utc_now = datetime.now(tz.tzutc())
-    utc_now_rounded_hour = _round_datetime_to_hour(utc_now)
 
     # Get weather metrics
     weather_details = get_hourly_weather(latitude=latitude, longitude=longitude)
 
-    apparent_temp_period_values = weather_details.properties.apparent_temperature.values
-    apparent_temp_value_now = _determine_now_time_period_value(apparent_temp_period_values, utc_now_rounded_hour)
+    apparent_temp_value_now = weather_details.properties.apparent_temperature.now_time_period_value()
+    wind_speed_value_now = weather_details.properties.wind_speed.now_time_period_value()
+    probability_of_precipitation_value_now = weather_details.properties.probability_of_precipitation.now_time_period_value()
+    quantitative_precipitation_value_now = weather_details.properties.quantitative_precipitation.now_time_period_value()
+    sky_cover_value_now = weather_details.properties.sky_cover.now_time_period_value()
 
-    wind_speed_period_values = weather_details.properties.wind_speed.values
-    wind_speed_value_now = _determine_now_time_period_value(wind_speed_period_values, utc_now_rounded_hour)
-
-    probability_of_precipitation_period_values = weather_details.properties.probability_of_precipitation.values
-    probability_of_precipitation_value_now = _determine_now_time_period_value(
-        probability_of_precipitation_period_values, utc_now_rounded_hour)
-
-    quantitative_precipitation_period_values = weather_details.properties.quantitative_precipitation.values
-    quantitative_precipitation_value_now = _determine_now_time_period_value(quantitative_precipitation_period_values,
-                                                                            utc_now_rounded_hour)
-
-    sky_cover_period_values = weather_details.properties.sky_cover.values
-    sky_cover_value_now = _determine_now_time_period_value(sky_cover_period_values, utc_now_rounded_hour)
-
-    # Get sunrise data
+    # Get sunrise and sunset data
     sunrise_sunset_today_response = get_sunrise_sunset_times(latitude=latitude, longitude=longitude)
     sunset_sunrise_data = sunrise_sunset_today_response.results
     sunrise_time_utc = sunset_sunrise_data.sunrise_time_utc
@@ -111,7 +85,7 @@ def main():
     if probability_of_precipitation_value_now > 10 or quantitative_precipitation_value_now > 0:
         print("Vivobarefoot shoes, Umbrella", sep="\n")
 
-    print(f"Sunrise {sunrise_time_human_readable}")
+    print(f"\nSunrise {sunrise_time_human_readable}")
     print(f"Sunset {sunset_time_human_readable}")
 
 
