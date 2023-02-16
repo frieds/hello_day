@@ -18,6 +18,7 @@ class TemperatureLevel(Enum):
     VERY_COLD = Range(min=-100, max=25)
     COLD = Range(min=25, max=45)
     WARM = Range(min=45, max=60)
+    HOT = Range(min=60, max=100)
 
 
 class WindSpeed(Enum):

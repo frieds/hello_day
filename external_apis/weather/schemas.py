@@ -29,11 +29,20 @@ class HourlyWeatherPropertyDetails(BaseModel):
     unit_of_measurement: str = Field(alias="uom")
     values: List[HourlyWeatherPropertyPeriodValues]
 
+    def convert_value_to_expected_unit_of_measurement(self, value):
+        if self.unit_of_measurement_value == "degC":
+            # convert apparent temperature to Fahrenheit
+            return (9 / 5) * value + 32
+        elif self.unit_of_measurement_value == "km_h-1":
+            # convert wind speed to miles per hour (mph)
+            return value * 0.621371
+        else:
+            return value
+
     def now_time_period_value(self) -> float:
         """
         Values have time period start times. Periods can be multiple hours.
-        Logic finds the value for the time period that now is in.
-        Also converts measurement value to Fahrenheit if needed
+        Logic finds the value for the time period that now is in and converts to expected unit of measurement
         Returns:
             period value
         """
@@ -41,10 +50,7 @@ class HourlyWeatherPropertyDetails(BaseModel):
 
         for period in reversed(self.values):
             if period.start_time <= utc_now_rounded_hour:
-                if self.unit_of_measurement_value == "degC":
-                    return (9 / 5) * period.value + 32
-                else:
-                    return period.value
+                return self.convert_value_to_expected_unit_of_measurement(period.value)
 
     @property
     def unit_of_measurement_value(self) -> str:
