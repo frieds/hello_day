@@ -33,6 +33,7 @@ class HourlyWeatherPropertyDetails(BaseModel):
         """
         Values have time period start times. Periods can be multiple hours.
         Logic finds the value for the time period that now is in.
+        Also converts measurement value to Fahrenheit if needed
         Returns:
             period value
         """
@@ -40,22 +41,15 @@ class HourlyWeatherPropertyDetails(BaseModel):
 
         for period in reversed(self.values):
             if period.start_time <= utc_now_rounded_hour:
-                return period.value
+                if self.unit_of_measurement_value == "degC":
+                    return (9 / 5) * period.value + 32
+                else:
+                    return period.value
 
     @property
     def unit_of_measurement_value(self) -> str:
+        # ex format: 'wmoUnit:degC'
         return self.unit_of_measurement.split(":")[1]
-
-    @property
-    def unit_of_measurement_value_full_name(self):
-        # only mapped measurements for metrics used
-        mapping = {
-            "degC": "degrees_celsius",
-            "percent": "percent",
-            "mm": "millimeters",
-            "km_h-1": "kilometre_per_hour"
-        }
-        return mapping[self.unit_of_measurement_value]
 
 
 class HourlyWeatherProperties(BaseModel):
