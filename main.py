@@ -17,8 +17,9 @@ class TemperatureLevel(Enum):
     # min max values in Fahrenheit
     VERY_COLD = Range(min=-100, max=25)
     COLD = Range(min=25, max=45)
-    WARM = Range(min=45, max=60)
-    HOT = Range(min=60, max=100)
+    COOL = Range(min=45, max=57)
+    WARM = Range(min=57, max=67)
+    HOT = Range(min=67, max=100)
 
 
 class WindSpeed(Enum):
@@ -66,21 +67,29 @@ def main():
     sunset_time_human_readable = sunset_sunrise_data.sunset_time_human_readable
 
     # Logic to recommend clothing and accessories
+
+    wind_level = _determine_level(WindSpeed, wind_speed_value_now)
+    temp_level = _determine_level(TemperatureLevel, apparent_temp_value_now)
+
     is_past_morning = utc_now > sunrise_time_utc + timedelta(minutes=30)
     is_before_evening = utc_now + timedelta(minutes=40) < sunrise_time_utc
     is_sunny = sky_cover_value_now < 30
-    is_windy = wind_speed_value_now in (WindSpeed.HIGH, WindSpeed.MEDIUM)
+    is_windy = wind_level in (WindSpeed.HIGH, WindSpeed.MEDIUM)
 
     print("Wear:")
-    if apparent_temp_value_now in (TemperatureLevel.VERY_COLD, TemperatureLevel.COLD):
+    if temp_level in (TemperatureLevel.VERY_COLD, TemperatureLevel.COLD):
         print("Winter jacket", "Gloves", "Knit Hat", sep="\n")
-    else:
+    elif temp_level == TemperatureLevel.COOL:
         print("REI or OV pants", "T-shirt", sep="\n")
+    elif temp_level == TemperatureLevel.WARM:
+        print("Shorts", "T-shirt", sep="\n")
+    else:
+        print("Shorts", "T-shirt", "Hat", sep="\n")
 
     if (is_past_morning and is_before_evening and is_sunny) or (is_windy and is_sunny):
         print("Sunglasses")
 
-    if apparent_temp_value_now == TemperatureLevel.VERY_COLD and wind_speed_value_now == WindSpeed.HIGH:
+    if temp_level == TemperatureLevel.VERY_COLD and wind_level == WindSpeed.HIGH:
         print("Facemask")
 
     if probability_of_precipitation_value_now > 10 or quantitative_precipitation_value_now > 0:
