@@ -48,12 +48,6 @@ app = FastAPI()
 
 @app.get("/weather_recs/")
 async def get_sunrise_sunset_and_clothing_recs(latitude: float, longitude: float):
-    # hardcoded values for me
-    latitude = 40.752980
-    longitude = -73.929910
-
-    utc_now = datetime.now(tz.tzutc())
-
     # Get weather metrics
     weather_details = get_hourly_weather(latitude=latitude, longitude=longitude)
 
@@ -75,6 +69,7 @@ async def get_sunrise_sunset_and_clothing_recs(latitude: float, longitude: float
     wind_level = _determine_level(WindSpeed, wind_speed_value_now)
     temp_level = _determine_level(TemperatureLevel, apparent_temp_value_now)
 
+    utc_now = datetime.now(tz.tzutc())
     is_past_morning = utc_now > sunrise_time_utc + timedelta(minutes=30)
     is_before_evening = utc_now + timedelta(minutes=40) < sunrise_time_utc
     is_sunny = sky_cover_value_now < 30
