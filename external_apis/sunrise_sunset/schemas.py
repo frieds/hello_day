@@ -23,31 +23,6 @@ class SunriseSunset(BaseModel):
     # in seconds
     day_length: int
 
-    @property
-    def sunrise_time_human_readable(self):
-        return self.get_humanized_time_string(self.sunrise_time_utc)
-
-    @property
-    def sunset_time_human_readable(self):
-        return self.get_humanized_time_string(self.sunset_time_utc)
-
-    @classmethod
-    def get_humanized_time_string(cls, datetime_value_utc: datetime):
-        # convert to local time
-        datetime_value_local = datetime_value_utc.astimezone(tz.tzlocal())
-        # converts to hour:minute am/pm
-        datetime_hour_minute = datetime_value_local.strftime("%-I:%M%p").lower()
-
-        datetime_now_utc = datetime.now(tz.tzutc())
-
-        if datetime_value_utc > datetime_now_utc:
-            output = f"is today at {datetime_hour_minute}"
-        elif datetime_value_utc > datetime_now_utc + timedelta(minutes=30):
-            output = f"was earlier at {datetime_hour_minute}"
-        else:
-            output = f"was way earlier at {datetime_hour_minute}"
-        return output
-
 
 class SunriseSunsetResponse(BaseModel):
     results: SunriseSunset
