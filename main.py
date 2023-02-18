@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 
 from dateutil import tz
+from fastapi import FastAPI
 from pydantic import BaseModel
 
 from external_apis.sunrise_sunset.client import get_sunrise_sunset_times
@@ -42,7 +43,11 @@ def _determine_level(weather_metric: Enum, value: int):
             return member
 
 
-def main():
+app = FastAPI()
+
+
+@app.get("/weather_recs/")
+async def get_sunrise_sunset_and_clothing_recs(latitude: float, longitude: float):
     # hardcoded values for me
     latitude = 40.752980
     longitude = -73.929910
@@ -60,14 +65,13 @@ def main():
 
     # Get sunrise and sunset data
     sunrise_sunset_today_response = get_sunrise_sunset_times(latitude=latitude, longitude=longitude)
-    sunset_sunrise_data = sunrise_sunset_today_response.results
-    sunrise_time_utc = sunset_sunrise_data.sunrise_time_utc
+    sunrise_time_utc = sunrise_sunset_today_response.results.sunrise_time_utc
+    sunset_time_utc = sunrise_sunset_today_response.results.sunset_time_utc
 
-    sunrise_time_human_readable = sunset_sunrise_data.sunrise_time_human_readable
-    sunset_time_human_readable = sunset_sunrise_data.sunset_time_human_readable
+    sunset_time_short = sunset_time_utc.strftime("%Y-%m-%d %H:%M")
+    sunrise_time_short = sunrise_time_utc.strftime("%Y-%m-%d %H:%M")
 
     # Logic to recommend clothing and accessories
-
     wind_level = _determine_level(WindSpeed, wind_speed_value_now)
     temp_level = _determine_level(TemperatureLevel, apparent_temp_value_now)
 
@@ -76,27 +80,28 @@ def main():
     is_sunny = sky_cover_value_now < 30
     is_windy = wind_level in (WindSpeed.HIGH, WindSpeed.MEDIUM)
 
-    print("Wear:")
+    items_to_bring = []
     if temp_level in (TemperatureLevel.VERY_COLD, TemperatureLevel.COLD):
-        print("Winter jacket", "Gloves", "Knit Hat", sep="\n")
+        items_to_bring.extend(["Winter jacket", "Gloves", "Knit Hat"])
     elif temp_level == TemperatureLevel.COOL:
-        print("REI or OV pants", "T-shirt", sep="\n")
+        items_to_bring.extend(["REI or OV pants", "T-shirt"])
     elif temp_level == TemperatureLevel.WARM:
-        print("Shorts", "T-shirt", sep="\n")
+        items_to_bring.extend(["Shorts", "T-shirt"])
     else:
-        print("Shorts", "T-shirt", "Hat", sep="\n")
+        items_to_bring.extend(["Shorts", "T-shirt", "Hat"])
 
     if (is_past_morning and is_before_evening and is_sunny) or (is_windy and is_sunny):
-        print("Sunglasses")
+        items_to_bring.extend(["Sunglasses"])
 
     if temp_level == TemperatureLevel.VERY_COLD and wind_level == WindSpeed.HIGH:
-        print("Facemask")
+        items_to_bring.extend(["Facemask"])
 
     if probability_of_precipitation_value_now > 10 or quantitative_precipitation_value_now > 0:
-        print("Vivobarefoot shoes, Umbrella", sep="\n")
+        items_to_bring.extend(["Vivobarefoot shoes", "Umbrella"])
 
-    print(f"\nSunrise {sunrise_time_human_readable}")
-    print(f"Sunset {sunset_time_human_readable}")
+    items_string = ", ".join(items_to_bring)
 
-
-main()
+    response = {"sunrise_time_utc": sunrise_time_short,
+                "sunset_time_utc": sunset_time_short,
+                "clothing_recs": items_string}
+    return response
