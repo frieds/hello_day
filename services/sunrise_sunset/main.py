@@ -4,8 +4,8 @@ from datetime import datetime
 
 
 class SunriseSunsetTimesResponse(BaseModel):
-    sunrise_time: datetime
-    sunset_time: datetime
+    sunrise_time: str
+    sunset_time: str
 
 
 def get_sunrise_sunset_today_times_short(latitude: float, longitude: float):
