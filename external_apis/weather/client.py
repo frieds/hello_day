@@ -2,6 +2,7 @@ from enum import Enum
 
 from requests import get
 from requests.exceptions import HTTPError
+from fastapi import HTTPException
 
 from external_apis.weather.schemas import HourlyWeatherResponse, LocationMetadataResponse
 
@@ -15,13 +16,13 @@ class EndpointPath(str, Enum):
 def _get_location_metadata(latitude: float, longitude: float):
     endpoint = EndpointPath.LOCATION_METADATA.format(latitude=latitude, longitude=longitude)
     url = f"{_BASE_URL}{endpoint}"
+
     try:
         response = get(url=url, headers={"User-Agent": "(local app, dfriedman33@gmail.com)"})
         # If the response was successful, no Exception will be raised
         response.raise_for_status()
     except HTTPError as http_err:
-        print(f'HTTP error occurred: {http_err}')
-        raise http_err
+        raise HTTPException(status_code=http_err.response.status_code, detail=http_err.response.json())
     return LocationMetadataResponse.parse_obj(response.json())
 
 
