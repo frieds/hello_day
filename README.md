@@ -17,7 +17,9 @@ To solve these problems, I created logic in this Python service and two Apple Sh
 One [Apple Shortcut](https://www.icloud.com/shortcuts/7759e43905d54459b1b69d160f7add18) recommends clothing and 
 accessories based on real-time weather data. I run the Shortcut from my iPhone home screen in one click. 
 
+<figure class="video_container">
 <iframe width="188" height="355" src="https://www.youtube.com/embed/DTJAUE3NoiA" title="Apple Shortcut: Personalized Clothing Recommendations Based on Weather" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+</figure>
  
 Interested in this functionality and live in the United States? If yes, email me at dan [@] dfrieds.com, and I'll 
 incorporate your clothing & accessory suggestions for the Shortcut too.
